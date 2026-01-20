@@ -11,6 +11,7 @@
 - Range (two boundaries L, R for a contiguous subarray/substring)
 - Split point (one index i separating left/right)
 - Match across two lists (alignment between A and B)
+- Subset (any combination of elements, include/skip each element)
 
 Once you name the candidate, brute force becomes: enumerate candidates + check condition + keep best/return.
 
@@ -271,6 +272,62 @@ Another common one: “Merge two sorted lists”
 
 ⸻
 
+6 - Candidate = subset (any combination)
+
+Use when: “any combination”, “subset”, “pick some elements”, “can we choose numbers to sum to…”, “partition”, “can form target”
+
+Key distinction
+
+- Contiguous language (“subarray”, “substring”, “window”, “consecutive”) → candidate is a range (L, R)
+- Combination language (“any combination”, “pick any”, “subset”) → candidate is a subset (include/skip)
+
+Quick sanity check (60 seconds)
+
+Ask: “Can the valid solution skip elements?”
+- If yes, a window/range approach is likely wrong.
+- Make a tiny counterexample to prove it.
+
+Example problem: “Array Addition / subset sum to target (exclude largest)”
+
+- Input: [12, 1, 2, 5, 9]
+- Target: 12
+- Valid subset: 1 + 2 + 9 = 12 (skips 5)
+- A contiguous window on the sorted list will miss this.
+
+Brute force (include/skip recursion)
+
+```python
+# Outline only
+# dfs(i, current_sum): at index i, either include nums[i] or skip it
+# stop early if current_sum == target
+```
+
+Brute force (bitmask subsets)
+
+```python
+# Outline only
+# for mask in range(2^n): sum elements where bit is set
+```
+
+Upgrade 1: DP of reachable sums (set)
+
+```python
+# Outline only
+# reachable = {0}
+# for x in nums: reachable |= {s + x for s in reachable}
+```
+
+Upgrade 2: prune when possible
+
+- If all remaining numbers are non-negative: if current_sum > target, you can stop exploring that branch.
+- If negatives exist: pruning is trickier; prefer dynamic programming (DP)-set or still do Depth First Search (DFS) without that prune.
+
+Interview “pivot” line (use this when you realize you picked the wrong pattern)
+
+- “My current approach assumes contiguity (a window). The prompt allows skipping elements, so I need a subset include/skip approach.”
+
+⸻
+
 Fast “upgrade picker” (what brute force is wasting time on)
 
 - repeated membership checks → set / dict
@@ -284,11 +341,15 @@ Fast “upgrade picker” (what brute force is wasting time on)
 
 20-second solving routine
 
-1. Name the candidate (element / pair / range / split / match)
-2. Write the brute-force skeleton (even if slow)
-3. Identify repeated work (membership, sums, scanning)
-4. Swap in the upgrade (set/map, prefix, window, pointers)
-5. Edge cases: empty, 1 item, duplicates, negatives, no answer
+1. Read for keywords that imply contiguity vs combination
+   - “subarray/substring/window/consecutive” → range candidate (L, R)
+   - “any combination/subset/pick some” → subset candidate (include/skip)
+2. Name the candidate (element / pair / range / split / match / subset)
+3. Write the brute-force skeleton (even if slow)
+4. Check with a tiny example and one counterexample that would break the wrong pattern
+5. Identify repeated work (membership, sums, scanning)
+6. Swap in the upgrade (set/map, prefix, window, pointers, DP set)
+7. Edge cases: empty, 1 item, duplicates, negatives, no answer
 
 ## RBCES
 
@@ -308,6 +369,7 @@ Use one of these “naive generators” (pick the first that fits):
    - Triplets → 3 loops
    - Subarrays → loops over L, R
    - Subsequences → recursion/bitmask (usually too big but it’s still a baseline)
+   - Subsets (“any combination”) → recursion include/skip or bitmask (baseline for subset-sum style problems)
 
 2. Simulate the definition literally
 
@@ -335,3 +397,20 @@ Now ask: “What repeated work did brute force do?”
 S — Sanity/edges
 
 - empty, 1 item, duplicates, negatives, whitespace, no answer
+
+
+⸻
+
+When you’re stuck in an interview (no hints)
+
+- Say the brute force out loud first (even if it’s slow). This buys time and shows structured thinking.
+- If you can’t finish brute force, at least write the enumeration skeleton and talk through correctness.
+- If your approach is failing, pivot early:
+  - “This approach assumes X. A counterexample is Y. So I should use Z.”
+
+Counterexample prompts you can use quickly
+
+- “Can the solution skip elements?” (subset vs range)
+- “What if duplicates exist?” (counts vs set)
+- “What if negatives exist?” (sliding window pitfalls, pruning limits)
+- “What if the answer is empty/no solution?”
